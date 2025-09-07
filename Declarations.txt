@@ -1,0 +1,43 @@
+1.The implementation does not use typical tcp like close i.e if one end closes the other end does not know.
+2.The implementation does not uses tcp like connect, it directly start sending data or listening.
+3.The close call directly removes socket , does not check wether whole data sent or received.
+4.Run initial file directly if its required to keep the sockets running even after the transfer completes, else run directly user1 or user2 and the background threads stop running after closing the first process
+5.Remove the shared memory using `ipcrm -m ` beforing running again.
+
+Function Details
+
+-- User functions --
+
+1. k_socket()
+	This function checks the availablity o all sockets and give a available resource.
+	Initialises shared memory if not found and creates P ,R thraeds on initializing the shared memory.
+
+2.k_bind()
+	This function takes k_sockfd,current procress address(sock addr) and connecting sockaddr.
+	Return 1 does not mean it is actually binded. Binding takes place in p thraed and can have error binding.
+
+3.k_close()
+	This function deallocates the socket alredy given.
+	Does not wait to send or recieve all packets to be sent or recievved.
+
+4.send_data()
+	This function takes data (len < 500) and makes a packet and adds to buffer.
+	Length should be less than 500.
+
+5.recv_data()
+	This function takes a packet from buffer and writes the data into given buf and return sthe length of the data written.
+
+-- Background functions --
+
+6.dropMessage()
+	This function returns 1 or 0 wether to drop packet or not for custom drop implementation.
+
+7.send_packet()
+	This function sends the given packet to the client address present in ktp_socket structure.
+	Update the timestamp and also check for timeout in packet.
+
+8.init_shared_memory()
+	This function initializes shared memory and all sockets.
+
+9.Sender and reciever thraeds()
+	functiosn run in P,R thraeds in background.
